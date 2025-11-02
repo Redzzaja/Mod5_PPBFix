@@ -52,9 +52,6 @@ Proyek ini mengimplementasikan fungsionalitas **CRUD** (Create, Read, Update, De
 ## 📦 Instalasi & Menjalankan Lokal
 
 1.  _Clone_ repository ini:
-    ```bash
-    git clone [https://github.com/rizasaputra29/modul5-ppb.git](https://github.com/rizasaputra29/modul5-ppb.git)
-    cd modul5-ppb
     ```
 2.  Install semua _dependencies_:
     ```bash
