@@ -1,5 +1,5 @@
-const USER_PROFILE_KEY = 'user_profile';
-const USER_IDENTIFIER_KEY = 'user_identifier';
+const USER_PROFILE_KEY = "user_profile";
+const USER_IDENTIFIER_KEY = "user_identifier";
 
 /**
  * Get or generate user identifier
@@ -25,18 +25,18 @@ export const getUserProfile = () => {
     // Return default profile with user identifier
     return {
       // --- MODIFIKASI DI SINI ---
-      username: 'Muhammad Riza Saputra', 
+      username: "Maulana",
       avatar: null,
-      bio: '',
-      userId: getUserIdentifier()
+      bio: "",
+      userId: getUserIdentifier(),
     };
   } catch (error) {
     return {
       // --- MODIFIKASI DI SINI ---
-      username: 'Muhammad Riza Saputra',
+      username: "Maulana",
       avatar: null,
-      bio: '',
-      userId: getUserIdentifier()
+      bio: "",
+      userId: getUserIdentifier(),
     };
   }
 };
@@ -50,7 +50,7 @@ export const saveUserProfile = (profile) => {
     const profileData = {
       ...profile,
       userId,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
     localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profileData));
     return { success: true, data: profileData };
@@ -79,7 +79,7 @@ export const updateUsername = (username) => {
   try {
     const profile = getUserProfile();
     // --- MODIFIKASI DI SINI ---
-    profile.username = username.trim() || 'Muhammad Riza Saputra'; // Fallback jika input kosong
+    profile.username = username.trim() || "Maulana"; // Fallback jika input kosong
     return saveUserProfile(profile);
   } catch (error) {
     return { success: false, message: error.message };
@@ -105,5 +105,5 @@ export default {
   saveUserProfile,
   updateAvatar,
   updateUsername,
-  updateBio
+  updateBio,
 };
