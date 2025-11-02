@@ -52,17 +52,19 @@ Proyek ini mengimplementasikan fungsionalitas **CRUD** (Create, Read, Update, De
 ## 📦 Instalasi & Menjalankan Lokal
 
 1.  _Clone_ repository ini:
+    ```git
+    https://github.com/Redzzaja/Mod5_PPBFix.git
     ```
-2.  Install semua _dependencies_:
+3.  Install semua _dependencies_:
     ```bash
     npm install
     ```
-3.  Buat file `.env` di _root_ proyek dan isi dengan URL API:
+4.  Buat file `.env` di _root_ proyek dan isi dengan URL API:
     ```
     VITE_API_BASE_URL=[https://modlima.fuadfakhruz.id](https://modlima.fuadfakhruz.id)
     ```
-4.  Jalankan _development server_:
+5.  Jalankan _development server_:
     ```bash
     npm run dev
     ```
-5.  Buka [http://localhost:5173](http://localhost:5173) di browser.
+6.  Buka [http://localhost:5173](http://localhost:5173) di browser.
