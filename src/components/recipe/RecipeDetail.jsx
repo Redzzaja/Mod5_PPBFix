@@ -15,9 +15,9 @@ import {
   ChefHat,
   Star,
   Send,
-  Edit,
-  Trash2,
-  Share2,
+  Pencil, // <-- Ganti dari Edit
+  Trash, // <-- Ganti dari Trash2
+  Upload,
   Check,
 } from "lucide-react";
 import recipeService from "../../services/recipeService";
@@ -227,8 +227,8 @@ export default function RecipeDetail({
               onClick={handleShare}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 copied
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-700 text-white hover:bg-gray-800"
+                  ? `bg-green-600 text-white border border-green-600`
+                  : `bg-transparent text-${colors.primary}-600 border border-${colors.primary}-600 hover:bg-${colors.primary}-600 hover:text-white`
               }`}
             >
               {copied ? (
@@ -238,7 +238,7 @@ export default function RecipeDetail({
                 </>
               ) : (
                 <>
-                  <Share2 className="w-4 h-4" />
+                  <Upload className="w-4 h-4" /> {/* <-- Ganti menjadi ini */}
                   <span className="hidden md:inline">Bagikan</span>
                 </>
               )}
@@ -248,16 +248,16 @@ export default function RecipeDetail({
               <>
                 <button
                   onClick={() => onEdit(recipeId)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors" // <-- Warna diubah
                 >
-                  <Edit className="w-4 h-4" />
+                  <Pencil className="w-4 h-4" /> {/* <-- Ikon diubah */}
                   <span className="hidden md:inline">Edit</span>
                 </button>
                 <button
                   onClick={() => setShowDeleteModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-transparent text-red-600 border border-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-colors" // <-- Style warna diubah
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash className="w-4 h-4" /> {/* <-- Ikon diubah */}
                   <span className="hidden md:inline">Hapus</span>
                 </button>
               </>

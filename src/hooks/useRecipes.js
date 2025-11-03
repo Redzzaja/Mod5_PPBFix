@@ -1,9 +1,13 @@
 // src/hooks/useRecipes.js
-import { useState, useEffect, useCallback } from 'react';
-import recipeService from '../services/recipeService';
+import { useState, useEffect, useCallback } from "react";
+import recipeService from "../services/recipeService";
 
 // --- BUAT CACHE DI LEVEL MODUL ---
 const simpleCache = new Map();
+
+// --- 1. TAMBAHKAN DURASI KEDALUWARSA CACHE ---
+// Contoh: 5 menit (dalam milidetik)
+const CACHE_DURATION_MS = 5 * 60 * 1000;
 
 /**
  * Custom hook for fetching recipes
@@ -16,7 +20,6 @@ export function useRecipes(params = {}) {
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
 
-  // Ubah params jadi string untuk key cache
   const cacheKey = JSON.stringify(params);
 
   const fetchRecipes = useCallback(async () => {
@@ -24,52 +27,68 @@ export function useRecipes(params = {}) {
       setLoading(true);
       setError(null);
 
-      // --- LOGIC CACHING DIMULAI ---
-      // 1. Cek apakah data ada di cache
+      // --- 2. MODIFIKASI LOGIC PEMBACAAN CACHE ---
       if (simpleCache.has(cacheKey)) {
-        const cachedData = simpleCache.get(cacheKey);
-        setRecipes(cachedData.data || []);
-        setPagination(cachedData.pagination || null);
-        setLoading(false);
-        return; // Hentikan eksekusi jika data dari cache
+        const cachedItem = simpleCache.get(cacheKey); // <-- Ambil item cache
+        const now = Date.now();
+        const isExpired = now - cachedItem.timestamp > CACHE_DURATION_MS; // <-- Cek kedaluwarsa
+
+        if (!isExpired) {
+          // Jika BELUM kedaluwarsa, gunakan data cache
+          setRecipes(cachedItem.data || []);
+          setPagination(cachedItem.pagination || null);
+          setLoading(false);
+          return;
+        } else {
+          // Jika SUDAH kedaluwarsa, hapus dari cache
+          simpleCache.delete(cacheKey);
+        }
       }
       // --- LOGIC CACHING SELESAI ---
 
       const response = await recipeService.getRecipes(params);
       if (response.success) {
-        setRecipes(response.data || []);
-        setPagination(response.pagination || null);
-        
-        // --- LOGIC CACHING DIMULAI ---
-        // 2. Simpan data ke cache
-        simpleCache.set(cacheKey, { 
-          data: response.data || [], 
-          pagination: response.pagination || null 
+        const responseData = response.data || [];
+        const responsePagination = response.pagination || null;
+
+        setRecipes(responseData);
+        setPagination(responsePagination);
+
+        // --- MODIFIKASI LOGIC PENYIMPANAN CACHE ---
+        // 2. Simpan data DAN timestamp ke cache
+        simpleCache.set(cacheKey, {
+          data: responseData,
+          pagination: responsePagination,
+          timestamp: Date.now(), // <-- Tambahkan timestamp saat ini
         });
         // --- LOGIC CACHING SELESAI ---
-
       } else {
-        setError(response.message || 'Failed to fetch recipes');
+        setError(response.message || "Failed to fetch recipes");
       }
     } catch (err) {
-      setError(err.message || 'An error occurred while fetching recipes');
+      setError(err.message || "An error occurred while fetching recipes");
       setRecipes([]);
     } finally {
       setLoading(false);
     }
-  }, [cacheKey]); // Gunakan cacheKey sebagai dependency
+  }, [cacheKey]);
 
   useEffect(() => {
     fetchRecipes();
   }, [fetchRecipes]);
 
-  // Modifikasi refetch agar menghapus cache sebelum fetch ulang
   const refetchWithInvalidation = useCallback(async () => {
-    simpleCache.delete(cacheKey); // Hapus cache
-    await fetchRecipes(); // Panggil fetch
+    simpleCache.delete(cacheKey);
+    await fetchRecipes();
   }, [cacheKey, fetchRecipes]);
 
-  return { recipes, loading, error, pagination, refetch: refetchWithInvalidation };
+  return {
+    recipes,
+    loading,
+    error,
+    pagination,
+    refetch: refetchWithInvalidation,
+  };
 }
 
 /**
@@ -82,7 +101,6 @@ export function useRecipe(id) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Key cache untuk resep tunggal
   const cacheKey = `recipe_${id}`;
 
   const fetchRecipe = useCallback(async () => {
@@ -94,43 +112,54 @@ export function useRecipe(id) {
       setLoading(true);
       setError(null);
 
-      // --- LOGIC CACHING ---
+      // --- 3. MODIFIKASI LOGIC PEMBACAAN CACHE ---
       if (simpleCache.has(cacheKey)) {
-        setRecipe(simpleCache.get(cacheKey));
-        setLoading(false);
-        return;
+        const cachedItem = simpleCache.get(cacheKey); // <-- Ambil item cache
+        const now = Date.now();
+        const isExpired = now - cachedItem.timestamp > CACHE_DURATION_MS; // <-- Cek kedaluwarsa
+
+        if (!isExpired) {
+          // Jika BELUM kedaluwarsa, gunakan data cache
+          setRecipe(cachedItem.data); // Ambil data dari properti 'data'
+          setLoading(false);
+          return;
+        } else {
+          // Jika SUDAH kedaluwarsa, hapus
+          simpleCache.delete(cacheKey);
+        }
       }
       // --- SELESAI CACHING ---
 
       const response = await recipeService.getRecipeById(id);
       if (response.success) {
-        setRecipe(response.data);
-        
-        // --- LOGIC CACHING ---
-        simpleCache.set(cacheKey, response.data); // Simpan data ke cache
-        // --- SELESAI CACHING ---
+        const responseData = response.data;
+        setRecipe(responseData);
 
+        // --- MODIFIKASI LOGIC PENYIMPANAN CACHE ---
+        simpleCache.set(cacheKey, {
+          data: responseData, // <-- Simpan data di dalam 'data'
+          timestamp: Date.now(), // <-- Tambahkan timestamp
+        });
+        // --- SELESAI CACHING ---
       } else {
-        setError(response.message || 'Failed to fetch recipe');
+        setError(response.message || "Failed to fetch recipe");
       }
     } catch (err) {
-      setError(err.message || 'An error occurred while fetching recipe');
+      setError(err.message || "An error occurred while fetching recipe");
       setRecipe(null);
     } finally {
       setLoading(false);
     }
-  }, [id, cacheKey]); // tambahkan cacheKey
+  }, [id, cacheKey]);
 
   useEffect(() => {
     fetchRecipe();
   }, [fetchRecipe]);
 
-  // Modifikasi refetch agar menghapus cache
   const refetchWithInvalidation = useCallback(async () => {
     simpleCache.delete(cacheKey);
     await fetchRecipe();
   }, [cacheKey, fetchRecipe]);
-
 
   return { recipe, loading, error, refetch: refetchWithInvalidation };
 }
